@@ -6,6 +6,9 @@ class Order:
         self.my_order_done = []
         self.orders_identification = orders_identification
 
+    def Reset(self):
+        self.my_orders = []
+        self.my_order_done = []
 
     def Order_done(self, Open_orders):
         """Compare between the order that you get from the server and the order that is our system. If our order is not\
@@ -38,17 +41,17 @@ class Order:
                         new_orders.append({"identification": order_done["identification"], "type": "sell",
                                           "currencyPair": str(
                                               self.orders_identification[order_done["identification"]]["currencyPair"]),
-                                          "amount": int(
+                                          "amount": float(
                                               self.orders_identification[order_done["identification"]]["amount_sell"]),
-                                          "rate": int(
+                                          "rate": float(
                                               self.orders_identification[order_done["identification"]]["rate_sell"])})
                     elif order_done["order"]["resultingTrades"][0]["type"] == "sell":
                         new_orders.append({"identification": order_done["identification"], "type": "buy",
                                           "currencyPair": str(
                                               self.orders_identification[order_done["identification"]]["currencyPair"]),
-                                          "amount": int(
+                                          "amount": float(
                                               self.orders_identification[order_done["identification"]]["amount_buy"]),
-                                          "rate": int(
+                                          "rate": float(
                                               self.orders_identification[order_done["identification"]]["rate_buy"])})
         return new_orders
 
