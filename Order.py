@@ -7,6 +7,7 @@ class Order:
         self.orders_identification = orders_identification
 
     def Reset(self):
+        """Reset the orders inside our system"""
         self.my_orders = []
         self.my_order_done = []
 
@@ -33,6 +34,7 @@ class Order:
         return None
 
     def New_order_after_done(self):
+        """Calculate the new order that they have to sent to the server following our strategy"""
         new_orders = []
         if len(self.my_order_done) > 0:
             for order_done in self.my_order_done:
