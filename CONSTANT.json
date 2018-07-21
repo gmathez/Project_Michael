@@ -1,0 +1,22 @@
+{
+  "LOGIN" :
+  {
+    "API_KEY" : "blablabla",
+    "SECRET" : "blablabla"
+  },
+
+  "TRADES":
+  [
+    {
+      "IDENTIFICATION" : 1,
+      "TRADE" :
+      {
+        "currencyPair" : "XXX_YYY",
+        "amount_buy" : 10,
+        "amount_sell" : 8,
+        "rate_buy" : 1,
+        "rate_sell": 2
+      }
+    }
+  ]
+}
