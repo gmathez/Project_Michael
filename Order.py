@@ -55,6 +55,7 @@ class Order:
                                               self.orders_identification[order_done["identification"]]["amount_buy"]),
                                           "rate": float(
                                               self.orders_identification[order_done["identification"]]["rate_buy"])})
+
         self.my_order_done.clear()
         return new_orders
 
