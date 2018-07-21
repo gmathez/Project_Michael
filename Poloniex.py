@@ -11,7 +11,7 @@ class Poloniex:
         self.API_KEY = API_key_extract()
         self.SECRET = Secret_extract()
 
-    def Poloiex_ASK(self, type, order={}):
+    def Poloiex_ASK(self, type, req={}):
 
         if (type == "returnTicker") or (type == "return24Volume"):
             with urllib.request.urlopen("https://poloniex.com/public?command=" + type) as response:
@@ -32,12 +32,11 @@ class Poloniex:
                 try:
                     return json.loads(json_data)
                 except json.JSONDecodeError as error:
-                    print("\nERROR : The commande returnOrderBook have come with a " +
+                    print("\nERROR : The command returnOrderBook have come with a " +
                           "error during the load of " +
                           "the jsonfile with this message : " + str(error.msg))
                     return {"error": "\n"}
         else:
-            req = {}
             req['command'] = type
             req['nonce'] = int(time.time() * 10000)
             post_data = urllib.parse.urlencode(req)
@@ -49,10 +48,30 @@ class Poloniex:
                 try:
                     return json.loads(json_data)
                 except json.JSONDecodeError as error:
-                    print("\nERROR : The commande returnTicket or return24Volume have come with a " +
+                    print("\nERROR : The command returnTicket or return24Volume have come with a " +
                           "error during the load of " +
                           "the jsonfile with this message : " + str(error.msg))
                     return {"error": "\n"}
 
+    def returnTicker(self):
+        return self.Poloiex_ASK("returnTicker")
+
+    def return24Volume(self):
+        return self.Poloiex_ASK("return24Volume")
+
+    def returnBalances(self):
+        return self.Poloiex_ASK('returnBalances')
+
+    def returnOpenOrders(self, currencyPair):
+        return self.Poloiex_ASK('returnOpenOrders', {"currencyPair": currencyPair})
+
+    def buy(self, currencyPair, rate, amount):
+        return self.Poloiex_ASK('buy', {"currencyPair": currencyPair, "rate": rate, "amount": amount})
+
+    def sell(self, currencyPair, rate, amount):
+        return self.Poloiex_ASK('sell', {"currencyPair": currencyPair, "rate": rate, "amount": amount})
+
+    def cancel(self, currencyPair, orderNumber):
+        return self.Poloiex_ASK('cancelOrder', {"currencyPair": currencyPair, "orderNumber": orderNumber})
 
 
