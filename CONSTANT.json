@@ -11,11 +11,99 @@
       "IDENTIFICATION" : 1,
       "TRADE" :
       {
-        "currencyPair" : "XXX_YYY",
-        "amount_buy" : 10,
-        "amount_sell" : 8,
-        "rate_buy" : 1,
-        "rate_sell": 2
+        "currencyPair" : "ETH_ZRH",
+        "amount_buy" : 100,
+        "amount_sell" : 98,
+        "rate_buy" : 0.00200001,
+        "rate_sell": 0.00210000
+      }
+    },
+    {
+      "IDENTIFICATION" : 2,
+      "TRADE" :
+      {
+        "currencyPair" : "ETH_ZRH",
+        "amount_buy" : 100,
+        "amount_sell" : 98,
+        "rate_buy" : 0.00210001,
+        "rate_sell": 0.00220000
+      }
+    },
+    {
+      "IDENTIFICATION" : 3,
+      "TRADE" :
+      {
+        "currencyPair" : "ETH_ZRH",
+        "amount_buy" : 100,
+        "amount_sell" : 98,
+        "rate_buy" : 0.00220001,
+        "rate_sell": 0.00230000
+      }
+    },
+    {
+      "IDENTIFICATION" : 4,
+      "TRADE" :
+      {
+        "currencyPair" : "ETH_ZRH",
+        "amount_buy" : 100,
+        "amount_sell" : 98,
+        "rate_buy" : 0.00230001,
+        "rate_sell": 0.00240000
+      }
+    },
+    {
+      "IDENTIFICATION" : 5,
+      "TRADE" :
+      {
+        "currencyPair" : "ETH_ZRH",
+        "amount_buy" : 100,
+        "amount_sell" : 98,
+        "rate_buy" : 0.00240001,
+        "rate_sell": 0.00250000
+      }
+    },
+    {
+      "IDENTIFICATION" : 6,
+      "TRADE" :
+      {
+        "currencyPair" : "ETH_ZRH",
+        "amount_buy" : 100,
+        "amount_sell" : 98,
+        "rate_buy" : 0.00250001,
+        "rate_sell": 0.00260000
+      }
+    },
+    {
+      "IDENTIFICATION" : 7,
+      "TRADE" :
+      {
+        "currencyPair" : "ETH_ZRH",
+        "amount_buy" : 100,
+        "amount_sell" : 98,
+        "rate_buy" : 0.00260001,
+        "rate_sell": 0.00270000
+      }
+    },
+    {
+      "IDENTIFICATION" : 8,
+      "TRADE" :
+      {
+        "currencyPair" : "ETH_ZRH",
+        "amount_buy" : 100,
+        "amount_sell" : 98,
+        "rate_buy" : 0.00270001,
+        "rate_sell": 0.00280000
+      }
+    },
+    {
+      "IDENTIFICATION" : 9,
+      "TRADE" :
+      {
+        "currencyPair" : "ETH_ZRH",
+        "amount_buy" : 100,
+        "amount_sell" : 98,
+        "rate_buy" : 0.00280001,
+        "rate_sell": 0.00290000
       }
     }
   ]

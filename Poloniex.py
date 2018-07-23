@@ -4,6 +4,9 @@ import urllib.parse
 import json
 import time
 import hmac, hashlib
+from urllib.error import URLError, HTTPError
+from URL_Error import Return_Code
+
 
 class Poloniex:
 
@@ -14,44 +17,68 @@ class Poloniex:
     def Poloiex_ASK(self, type, req={}):
 
         if (type == "returnTicker") or (type == "return24Volume"):
-            with urllib.request.urlopen("https://poloniex.com/public?command=" + type) as response:
-                json_data = response.read()
-                try:
+            try:
+                with urllib.request.urlopen("https://poloniex.com/public?command=" + type) as response:
+                    json_data = response.read()
                     return json.loads(json_data)
-                except json.JSONDecodeError as error:
-                    print("\nERROR : The commande returnTicket or return24Volume have come with a " +
-                          "error during the load of " +
-                          "the jsonfile with this message : " + str(error.msg))
-                    return {"error": "\n"}
+            except HTTPError as error:
+                print('The Server couldn\'t fulfill the request\n')
+                print("\t Error code : " + error.code +  " " + Return_Code(error.code)[0] + " " + Return_Code(error.code)[1] + "\n")
+                return {"error": "\n"}
+            except URLError as error:
+                print("We failed to reach a server \n")
+                print("\t Reason : " + error.reason + "\n")
+                return {"error": "\n"}
+            except json.JSONDecodeError as error:
+                print("\nERROR : The command returnTicket or return24Volume have come with a " +
+                        "error during the load of " +
+                        "the jsonfile with this message : " + str(error.msg))
+                return {"error": "\n"}
 
         elif type == "returnOrderBook":
             if "currencyPair" not in order:
                 order["currencyPair"] = "all"
-            with urllib.request.urlopen("https://poloniex.com/public?command=returnOrderBook&currencyPair=" + order["currencyPair"] + "&depth=10") as response:
-                json_data = response.read()
-                try:
+            try:
+                with urllib.request.urlopen("https://poloniex.com/public?command=returnOrderBook&currencyPair=" + order["currencyPair"] + "&depth=10") as response:
+                    json_data = response.read()
                     return json.loads(json_data)
-                except json.JSONDecodeError as error:
-                    print("\nERROR : The command returnOrderBook have come with a " +
-                          "error during the load of " +
-                          "the jsonfile with this message : " + str(error.msg))
-                    return {"error": "\n"}
+            except HTTPError as error:
+                print('The Server couldn\'t fulfill the request\n')
+                print("\t Error code : " + error.code +  " " + Return_Code(error.code)[0] + " " + Return_Code(error.code)[1] + "\n")
+                return {"error": "\n"}
+            except URLError as error:
+                print("We failed to reach a server \n")
+                print("\t Reason : " + error.reason + "\n")
+                return {"error": "\n"}
+            except json.JSONDecodeError as error:
+                print("\nERROR : The command returnOrderBook have come with a " +
+                        "error during the load of " +
+                        "the jsonfile with this message : " + str(error.msg))
+                return {"error": "\n"}
         else:
             req['command'] = type
             req['nonce'] = int(time.time() * 10000)
-            post_data = urllib.parse.urlencode(req)
+            post_data = b'urllib.parse.urlencode(req)'
 
-            sign = hmac.new(self.SECRET, post_data, hashlib.sha512).hexdigest()
+            sign = hmac.new(b'self.SECRET', post_data, hashlib.sha512).hexdigest()
             headers = {'Sign': sign, 'Key': self.API_KEY}
-            with urllib.request.urlopen(urllib.request.Request("https://poloniex.com/tradingApi", post_data, headers)) as response:
-                json_data = response.read()
-                try:
+            try:
+                with urllib.request.urlopen(urllib.request.Request("https://poloniex.com/tradingApi", post_data, headers)) as response:
+                    json_data = response.read()
                     return json.loads(json_data)
-                except json.JSONDecodeError as error:
-                    print("\nERROR : The command returnTicket or return24Volume have come with a " +
-                          "error during the load of " +
-                          "the jsonfile with this message : " + str(error.msg))
-                    return {"error": "\n"}
+            except HTTPError as error:
+                print('The Server couldn\'t fulfill the request\n')
+                print("\t Error code : " + error.code +  " " + Return_Code(error.code)[0] + " " + Return_Code(error.code)[1] + "\n")
+                return {"error": "\n"}
+            except URLError as error:
+                print("We failed to reach a server \n")
+                print("\t Reason : " + error.reason + "\n")
+                return {"error": "\n"}
+            except json.JSONDecodeError as error:
+                print("\nERROR : The command "+ str(type).upper()+" have come with a " +
+                        "error during the load of " +
+                        "the jsonfile with this message : " + str(error.msg))
+                return {"error": "\n"}
 
     def returnTicker(self):
         return self.Poloiex_ASK("returnTicker")

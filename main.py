@@ -15,7 +15,7 @@ def agreements():
         "Welcome to our Trading System. Before to start the program please verify on the file CONSTANT.json " +
         "that all the information are correct\n Please write OK to continue : ")
 
-    if not (Response == 'OK') and not (Response == 'ok'):
+    if not str(Response).upper() == 'OK':
         clear_terminal()
         print("\nYour answer was not OK, Please Restart if you want so.")
         return False
@@ -23,7 +23,7 @@ def agreements():
     Response = input(
         "\n Be aware that this program can order, cancel order, etc without your permission. Please write AGREE to continue : ")
 
-    if not (Response == 'AGREE') and not (Response == 'agree'):
+    if not str(Response).upper() == 'AGREE':
         clear_terminal()
         print("\nYour answer was not AGREE, Please Restart if you change of mind.")
         return False
@@ -37,7 +37,7 @@ def Public_Connexion_Control(poloniex_server, time_server):
     message = {}
     while continue_ and (nb <= 3):
         if time_server.Spike_Sender():
-            message = poloniex_server.Poloiex_ASK("returnTicker")
+            message = poloniex_server.returnTicker()
             if "error" in message:
                 nb += 1
                 clear_terminal()
@@ -53,12 +53,40 @@ def Public_Connexion_Control(poloniex_server, time_server):
         return False
     return True
 
+def Close_System(entier):
+    clear_terminal()
+    if entier == 0:
+        print("The Trading System will now process to its exit.")
+        text = "END : " + strftime("%a, %d %b %Y %H:%M:%S", time.localtime()) + "\n"
+        fichier = open("Order_DONE.txt", "a")
+        fichier.write(text)
+        fichier.close()
+        fichier = open("Order_NEW.txt", "a")
+        fichier.write(text)
+        fichier.close()
+        time.sleep(10)
+        sys.exit(entier)
+    else:
+        print("It seems that an error occur during the trading system. We apologize for that.")
+        text = "ERROR SYSTEM : " + strftime("%a, %d %b %Y %H:%M:%S", time.localtime()) + "\n"
+        fichier = open("Order_DONE.txt", "a")
+        fichier.write(text)
+        fichier.close()
+        fichier = open("Order_NEW.txt", "a")
+        fichier.write(text)
+        fichier.close()
+        fichier = open("Order_OPEN_BEFORE.txt", "a")
+        fichier.write(text)
+        fichier.close()
+        time.sleep(10)
+        sys.exit(entier)
+
 
 if __name__ == '__main__':
 
     """ AGREEMENT DECLEARATION """
     if not agreements():
-        sys.exit(1)
+        Close_System(1)
 
     """ INITALISATION SERVERS """
     time_server = Time_Controler()
@@ -67,8 +95,9 @@ if __name__ == '__main__':
     order_server = Order(order_identification)
 
     """ CONTROL PUBLIC CONNEXION """
+    time_server.Sleep_Time(10)
     if not Public_Connexion_Control(poloniex_server, time_server):
-        sys.exit(1)
+        Close_System(1)
 
     """ CONTROL PRIVATE CONNEXION """
     time_server.Sleep_Time(30)
@@ -92,7 +121,7 @@ if __name__ == '__main__':
         clear_terminal()
         print("\n The private connexion seem to have trouble : " + str(
             returnBalances["error"]) + ". Please try again in a few minutes and verify your API key and Secret")
-        sys.exit(1)
+        Close_System(1)
 
     clear_terminal()
     print("We can now begin to calculate the order and put everything in place for the trading")
@@ -103,14 +132,29 @@ if __name__ == '__main__':
     time_server.Sleep_Time(30)
     if time_server.Spike_Sender():
         returnTicker = poloniex_server.returnTicker()
+        if "error" in returnTicker:
+            clear_terminal()
+            print("An error occur during the return Ticker with this reason : " + str(returnOpenOrders["error"]))
+            Close_System(1)
     time_server.Sleep_Time(30)
     if time_server.Spike_Sender():
         clear_terminal()
-        print("Our Open orders will be write on a text file (Order_OPEN_BEFORE). Unfortunately all your open orders between the limit for your strategy will be cancel. But when we will inform you about it, you can put again these orders without affecting the system")
+        print("Our Open orders will be write on a text file (Order_OPEN_BEFORE). \nUnfortunately all your open orders between the limit for your strategy will be cancel. \nBut when we will inform you about it, you can put again these orders without affecting the system")
         #returnOpenOrders = poloniex_server.returnOpenOrders("all")
-        returnOpenOrders = {"XXX_YYY":[{"orderNumber":"120466","type":"sell","rate":"0.025","amount":"100","total":"2.5"}]}
+        returnOpenOrders = {"XXX_YYY":[{"orderNumber":"120466","type":"sell","rate":"0.025","amount":"100","total":"2.5"},
+                                       {"orderNumber": "127492", "type": "buy", "rate": "1.352", "amount": "50",
+                                        "total": "2"},
+                                       {"orderNumber": "73926", "type": "buy", "rate": "2", "amount": "100",
+                                        "total": "2.5"}]}
 
-    text = strftime("%a, %d %b %Y %H:%M:%S", time.localtime()) + "\n"
+        if "error" in returnOpenOrders:
+            clear_terminal()
+            print("An error occur during the return Order with this reason : " + str(returnOpenOrders["error"]))
+            Close_System(1)
+
+        time_server.Sleep_Time(20)
+
+    text = "START : " + strftime("%a, %d %b %Y %H:%M:%S", time.localtime()) + "\n"
     fichier = open("Order_DONE.txt", "w")
     fichier.write(text)
     fichier.close()
@@ -118,9 +162,6 @@ if __name__ == '__main__':
     fichier.write(text)
     fichier.close()
     fichier = open("Order_OPEN_BEFORE.txt", "w")
-    fichier.write(text)
-    fichier.close()
-    fichier = open("Order_OPEN_AFTER.txt", "w")
     fichier.write(text)
     fichier.close()
 
@@ -171,18 +212,44 @@ if __name__ == '__main__':
             if len(returnOpenOrders[currency]) > 0:
                 if currency in Order_Limit:
                     for open_order in returnOpenOrders[currency]:
-                        if (float(open_order["rate"]) >= Order_Limit[currency]["limit_MAX"]) or (float(open_order["rate"]) <= Order_Limit[currency]["limit_MIN"]):
-                            Orders_to_cancel.append(open_order["orderNumber"])
+                        if (float(open_order["rate"]) <= Order_Limit[currency]["limit_MAX"]) and (float(open_order["rate"]) >= Order_Limit[currency]["limit_MIN"]):
+                            dic = {}
+                            dic["currency"] = currency
+                            dic["orderNumber"] = open_order["orderNumber"]
+                            Orders_to_cancel.append(dic)
+
     fichier = open("Order_OPEN_BEFORE.txt", "a")
     if len(Orders_to_cancel) > 0:
         fichier.write("\n ORDER CANCELED : ")
         for order_to_cancel in Orders_to_cancel:
-            fichier.write("\n ORDER NUMBER : " + order_to_cancel)
+            fichier.write("\n ORDER NUMBER : " + str(order_to_cancel["orderNumber"]))
+        print("The order that will be cancel as been written in Order_OPEN_BEFORE.txt")
     else:
         fichier.write("\n NO ORDER CANCEL")
+        print("No Order will be cancel.")
     fichier.close()
     clear_terminal()
-    print("The order that will be cancel as been written in Order_OPEN_BEFORE.txt")
+
+    """ORDER CANCEL"""
+    if len(Orders_to_cancel) > 0:
+        for order_dic in Orders_to_cancel:
+            if time_server.Spike_Sender():
+                #success = poloniex_server.cancel(order_dic["currency"], order_dic["orderNumber"])
+                success = {"success": 1}
+                if "error" in success:
+                    clear_terminal()
+                    print("Sorry An error occurs during the cancellation of the orderNumber : " +
+                          str(order_dic["orderNumber"]) + "Error : " + str(success["error"]))
+                    time_server.Sleep_Time(3)
+                elif success["success"] == 1:
+                    print("The order number : " + str(order_dic["orderNumber"] + " was canceled"))
+                time_server.Sleep_Time(2.5)
+    Orders_to_cancel.clear()
+
+    os.system("pause")
+
+
+
 
 
 
