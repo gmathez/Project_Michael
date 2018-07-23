@@ -16,7 +16,7 @@ class Poloniex:
 
     def Poloiex_ASK(self, type, req={}):
 
-        if (type == "returnTicker") or (type == "return24Volume"):
+        if (type == "returnTicker") or (type == "return24Volume") or (type == "returnCurrencies"):
             try:
                 with urllib.request.urlopen("https://poloniex.com/public?command=" + type) as response:
                     json_data = response.read()
@@ -31,27 +31,6 @@ class Poloniex:
                 return {"error": "\n"}
             except json.JSONDecodeError as error:
                 print("\nERROR : The command returnTicket or return24Volume have come with a " +
-                        "error during the load of " +
-                        "the jsonfile with this message : " + str(error.msg))
-                return {"error": "\n"}
-
-        elif type == "returnOrderBook":
-            if "currencyPair" not in order:
-                order["currencyPair"] = "all"
-            try:
-                with urllib.request.urlopen("https://poloniex.com/public?command=returnOrderBook&currencyPair=" + order["currencyPair"] + "&depth=10") as response:
-                    json_data = response.read()
-                    return json.loads(json_data)
-            except HTTPError as error:
-                print('The Server couldn\'t fulfill the request\n')
-                print("\t Error code : " + error.code +  " " + Return_Code(error.code)[0] + " " + Return_Code(error.code)[1] + "\n")
-                return {"error": "\n"}
-            except URLError as error:
-                print("We failed to reach a server \n")
-                print("\t Reason : " + error.reason + "\n")
-                return {"error": "\n"}
-            except json.JSONDecodeError as error:
-                print("\nERROR : The command returnOrderBook have come with a " +
                         "error during the load of " +
                         "the jsonfile with this message : " + str(error.msg))
                 return {"error": "\n"}
@@ -80,25 +59,28 @@ class Poloniex:
                         "the jsonfile with this message : " + str(error.msg))
                 return {"error": "\n"}
 
-    def returnTicker(self):
+    def returnTicker(self): #PUBLIC
         return self.Poloiex_ASK("returnTicker")
 
-    def return24Volume(self):
+    def returnCurrencies(self): #PUBLIC
+        return self.Poloiex_ASK("returnCurrencies")
+
+    def return24Volume(self): #PUBLIC
         return self.Poloiex_ASK("return24Volume")
 
-    def returnBalances(self):
+    def returnBalances(self): #PRIVATE
         return self.Poloiex_ASK('returnBalances')
 
-    def returnOpenOrders(self, currencyPair):
+    def returnOpenOrders(self, currencyPair): #PRIVATE
         return self.Poloiex_ASK('returnOpenOrders', {"currencyPair": currencyPair})
 
-    def buy(self, currencyPair, rate, amount):
+    def buy(self, currencyPair, rate, amount): #PRIVATE
         return self.Poloiex_ASK('buy', {"currencyPair": currencyPair, "rate": rate, "amount": amount})
 
-    def sell(self, currencyPair, rate, amount):
+    def sell(self, currencyPair, rate, amount): #PRIVATE
         return self.Poloiex_ASK('sell', {"currencyPair": currencyPair, "rate": rate, "amount": amount})
 
-    def cancel(self, currencyPair, orderNumber):
+    def cancel(self, currencyPair, orderNumber): #PRIVATE
         return self.Poloiex_ASK('cancelOrder', {"currencyPair": currencyPair, "orderNumber": orderNumber})
 
 

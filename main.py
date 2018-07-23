@@ -78,7 +78,7 @@ def Close_System(entier):
         fichier = open("Order_OPEN_BEFORE.txt", "a")
         fichier.write(text)
         fichier.close()
-        time.sleep(10)
+        time.sleep(60)
         sys.exit(entier)
 
 
@@ -127,15 +127,7 @@ if __name__ == '__main__':
     print("We can now begin to calculate the order and put everything in place for the trading")
 
     """SEE THE SITUATION OF THE ORDERS"""
-    returnTicker = {}
     returnOpenOrders = {}
-    time_server.Sleep_Time(30)
-    if time_server.Spike_Sender():
-        returnTicker = poloniex_server.returnTicker()
-        if "error" in returnTicker:
-            clear_terminal()
-            print("An error occur during the return Ticker with this reason : " + str(returnOpenOrders["error"]))
-            Close_System(1)
     time_server.Sleep_Time(30)
     if time_server.Spike_Sender():
         clear_terminal()
@@ -228,7 +220,6 @@ if __name__ == '__main__':
         fichier.write("\n NO ORDER CANCEL")
         print("No Order will be cancel.")
     fichier.close()
-    clear_terminal()
 
     """ORDER CANCEL"""
     if len(Orders_to_cancel) > 0:
@@ -246,7 +237,75 @@ if __name__ == '__main__':
                 time_server.Sleep_Time(2.5)
     Orders_to_cancel.clear()
 
-    os.system("pause")
+    print("If a order was not cancel it's not a udge problem. Just try to cancel this/these order(s).\n"
+          "The system will place the new orders according to the strategy.")
+
+    returnTicker = {}
+    time_server.Sleep_Time(30)
+    if time_server.Spike_Sender():
+        returnTicker = poloniex_server.returnTicker()
+        if "error" in returnTicker:
+            clear_terminal()
+            print("An error occur during the return Ticker with this reason : " + str(returnTicker["error"]))
+            Close_System(1)
+
+    returnBalances = {}
+    time_server.Sleep_Time(5)
+    if time_server.Spike_Sender():
+        #returnBalances = poloniex_server.returnBalances()
+        if "error" in returnBalances:
+            print("An error occur during the demand of returnBalances with this message : " + str(returnBalances["error"]))
+            time_server.Sleep_Time(10)
+            Close_System(1)
+
+    returnCurrencies = {}
+    time_server.Sleep_Time(5)
+    if time_server.Spike_Sender():
+        returnCurrencies = poloniex_server.returnCurrencies()
+        if "error" in returnCurrencies:
+            clear_terminal()
+            print("An error occur during the return Currencies with this reason : " + str(returnCurrencies["error"]))
+            Close_System(1)
+
+    New_orders_to_do = []
+    Total_money = {}
+    for order in order_identification:
+        new_order = {}
+        new_order["identification"] = list(order.keys())[0]
+        order_param = order[new_order["identification"]]
+        rate_current = float(returnTicker[order_param["currencyPair"]])
+        Money_BUY = str(str(order_param["currencyPair"]).split("_")[0])
+        Money_SELL = str(str(order_param["currencyPair"]).split("_")[1])
+        if Money_BUY not in Total_money:
+            Total_money[Money_BUY] = returnBalances[Money_BUY]
+        if Money_SELL not in Total_money:
+            Total_money[Money_SELL] = returnBalances[Money_SELL]
+        if rate_current > order_param["rate_sell"]:
+            new_order["type"] = "buy"
+            new_order["currencyPair"] = str(order_param["currencyPair"])
+            new_order["amount"] = float(order_param["amount_buy"])
+            new_order["rate"] = float(order_param["rate_buy"])
+            Total_money[Money_BUY] -= new_order["amount"] * new_order["rate"] * returnCurrencies[Money_BUY]["txFee"]
+        else:
+            new_order["type"] = "sell"
+            new_order["currencyPair"] = str(order_param["currencyPair"])
+            new_order["amount"] = float(order_param["amount_sell"])
+            new_order["rate"] = float(order_param["rate_sell"])
+            Total_money[Money_SELL] -= new_order["amount"] * new_order["rate"] * returnCurrencies[Money_SELL]["txFee"]
+        New_orders_to_do.append(new_order)
+
+    Money_left = list(Total_money.values()).sort()
+    if Money_left[0] < 0:
+        print("You don't have enough money ! See where you don't have enough and start again the program")
+        for element in Total_money.items():
+            print("CURRENCY : {} AFTER THE ORDER IT WILL REST : {}".format(element[0], element[1]))
+        time_server.Sleep_Time(120)
+        Close_System(1)
+
+
+
+
+    Close_System(0)
 
 
 
