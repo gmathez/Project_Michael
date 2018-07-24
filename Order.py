@@ -18,7 +18,7 @@ class Order:
             order = order_identif["order"]
             order_number = order["orderNumber"]
             find = False
-            for open_order in Open_orders:
+            for open_order in Open_orders[str(self.orders_identification[order_identif["identification"]]["currencyPair"])]:
                 if order_number == open_order["orderNumber"]:
                     find = True
             if not find:

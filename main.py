@@ -1,11 +1,13 @@
 import os #os.system('cls' if os.name == 'nt' else 'clear')
 import sys #sys.exit("   ")
+import signal
 from Order import Order
 from Constant_Upload import Order_identification_extract
 from Timer import Time_Controler
 from Poloniex import Poloniex
 import time
 from time import strftime
+from random import uniform
 
 def clear_terminal():
     os.system('cls' if os.name == 'nt' else 'clear')
@@ -81,6 +83,11 @@ def Close_System(entier):
         fichier.close()
         time.sleep(60)
         sys.exit(entier)
+
+def CLOSE_PROJECT(signal, frame):
+    Close_System(0)
+
+signal.signal(signal.SIGINT, CLOSE_PROJECT)
 
 
 if __name__ == '__main__':
@@ -319,6 +326,8 @@ if __name__ == '__main__':
                 ORDER = poloniex_server.buy(order["currencyPair"], order["rate"], order["amount"])
             elif order["type"] == "sell":
                 ORDER = poloniex_server.sell(order["currencyPair"], order["rate"], order["amount"])
+            else:
+                ORDER = {"error" : "TYPE UNKOWN"}
             if "error" in ORDER:
                 print("An error occur during the transmission of the new order : ")
                 print("ORDER TYPE : " + str(order["type"]) + " RATE : " + str(order["rate"]) + " AMOUNT : " + str(order["amount"]) + "\n")
@@ -334,7 +343,67 @@ if __name__ == '__main__':
         time_server.Sleep_Time(120)
         Close_System(1)
 
-    Close_System(0)
+    clear_terminal()
+    print("From Now, the system don't need you anymore. It will run alone. Before to leave, we'll give you some comments :\n"+
+          "Please make sure that the computer will have always internet connexion\n"+
+          "Please make sure that the computer have enough power for all the time that you need\n"+
+          "An overheat may produce\n"+
+          "If an error occurs, it will maybe stop\n"+
+          "TO STOP THE PROGRAMME PLEASE PRESS CTRL + C\n Have a good day ;-) ")
+
+    time_server.Sleep_Time(60)
+    while True:
+        returnOpenOrders_loop = {}
+        if time_server.Spike_Sender():
+            returnOpenOrders_loop = poloniex_server.returnOpenOrders()
+            if "error" in returnOpenOrders_loop:
+                print("An error occur during a return Open orders ask")
+                time_server.Sleep_Time(120)
+                Close_System(1)
+        order_server.Order_done(returnOpenOrders_loop)
+        Order_TO_DO = order_server.New_order_after_done()
+        returnTicker_loop = {}
+        if time_server.Spike_Sender():
+            returnTicker_loop = poloniex_server.returnTicker()
+            if "error" in returnTicker_loop:
+                print("An error occur during a return Ticker ask")
+                time_server.Sleep_Time(120)
+                Close_System(1)
+        Order_TO_DO.sort(key=lambda order: abs(
+            order["rate"] - float(returnTicker_loop[order_identification[order["identification"]]["currencyPair"]]["last"])))
+        Orders_done = []
+        Error = False
+        for order in Order_TO_DO:
+            time_server.Sleep_Time(1.5)
+            order_done = {}
+            order_done["identification"] = order["identification"]
+            if time_server.Spike_Sender():
+                if order["type"] == "buy":
+                    ORDER = poloniex_server.buy(order["currencyPair"], order["rate"], order["amount"])
+                elif order["type"] == "sell":
+                    ORDER = poloniex_server.sell(order["currencyPair"], order["rate"], order["amount"])
+                else:
+                    ORDER = {"error": "TYPE UNKOWN"}
+                if "error" in ORDER:
+                    print("An error occur during the transmission of the new order : ")
+                    print("ORDER TYPE : " + str(order["type"]) + " RATE : " + str(order["rate"]) + " AMOUNT : " + str(
+                        order["amount"]) + "\n")
+                    print("ERROR MESSAGE : " + str(ORDER["error"]) + "\n")
+                    print("The system will stop. Try to resolve the problem according to the message above\n")
+                    Error = True
+                else:
+                    order_done["order"] = ORDER
+                    Orders_done.append(order_done)
+
+        order_server.Add_New_orders(Orders_done)
+        if Error:
+            time_server.Sleep_Time(120)
+            Close_System(1)
+
+        time_server.Sleep_Time(uniform(0,10)*uniform(0,10)*6+5)
+        continue
+
+
 
 
 
