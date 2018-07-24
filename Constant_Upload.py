@@ -15,5 +15,11 @@ def Order_identification_extract():
     orders_bloc = data["TRADES"]
     orders_identification = {}
     for order_bloc in orders_bloc:
-        orders_identification[order_bloc["IDENTIFICATION"]] = order_bloc["TRADE"]
+        if order_bloc["IDENTIFICATION"] in orders_identification:
+            identif = order_bloc["IDENTIFICATION"]
+            while identif in orders_identification:
+                identif += 1
+            orders_identification[identif] = order_bloc["TRADE"]
+        else:
+            orders_identification[int(order_bloc["IDENTIFICATION"])] = order_bloc["TRADE"]
     return orders_identification

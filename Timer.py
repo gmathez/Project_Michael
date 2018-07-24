@@ -7,12 +7,16 @@ class Time_Controler:
         self.period = 6  #max call per second to the server
         self.marge = 0.2
 
-    def END_time(self):
-        return time.time()
+    def Ask_time(self):
+        return time.clock()
 
     def Duration_time(self):
-        return self.END_time() - self.start_time
+        return self.Ask_time() - self.start_time
 
     def Spike_Sender(self):
         time.sleep(1/(self.period * (1 - self.marge)))
+        return True
+
+    def Sleep_Time(self, time_):
+        time.sleep(time_)
         return True
