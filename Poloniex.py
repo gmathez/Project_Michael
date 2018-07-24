@@ -35,19 +35,25 @@ class Poloniex:
                         "the jsonfile with this message : " + str(error.msg))
                 return {"error": "\n"}
         else:
-            req['command'] = type
+            req['command'] = str(type)
             req['nonce'] = int(time.time() * 10000)
-            post_data = b'urllib.parse.urlencode(req)'
+            post_data = urllib.parse.urlencode(req).encode()
 
-            sign = hmac.new(b'self.SECRET', post_data, hashlib.sha512).hexdigest()
-            headers = {'Sign': sign, 'Key': self.API_KEY}
+            sign = hmac.new(self.SECRET.encode(), post_data, hashlib.sha512).hexdigest()
+            headers = {'Sign': str(sign),
+                       'Key': str(self.API_KEY),
+                       'Content-Type': 'application/x-www-form-urlencoded'}
             try:
+
                 with urllib.request.urlopen(urllib.request.Request("https://poloniex.com/tradingApi", post_data, headers)) as response:
                     json_data = response.read()
                     return json.loads(json_data)
             except HTTPError as error:
+                if int(error.code) == 422:
+                    print("An error occur with false informations during the ordertype : " + str(type) + " : " + str(req) + "\n")
+
                 print('The Server couldn\'t fulfill the request\n')
-                print("\t Error code : " + error.code +  " " + Return_Code(error.code)[0] + " " + Return_Code(error.code)[1] + "\n")
+                print("\t Error code : " + str(error.code) +  " " + str(Return_Code(error.code)[0]) + " " + str(Return_Code(error.code)[1]) + "\n")
                 return {"error": "\n"}
             except URLError as error:
                 print("We failed to reach a server \n")
@@ -69,18 +75,18 @@ class Poloniex:
         return self.Poloiex_ASK("return24Volume")
 
     def returnBalances(self): #PRIVATE
-        return self.Poloiex_ASK('returnBalances')
+        return self.Poloiex_ASK("returnBalances")
 
-    def returnOpenOrders(self, currencyPair): #PRIVATE
-        return self.Poloiex_ASK('returnOpenOrders', {"currencyPair": currencyPair})
+    def returnOpenOrders(self, currencyPair = "all"): #PRIVATE
+        return self.Poloiex_ASK("returnOpenOrders", {"currencyPair": currencyPair})
 
     def buy(self, currencyPair, rate, amount): #PRIVATE
-        return self.Poloiex_ASK('buy', {"currencyPair": currencyPair, "rate": rate, "amount": amount})
+        return self.Poloiex_ASK("buy", {"currencyPair": currencyPair, "rate": rate, "amount": amount})
 
     def sell(self, currencyPair, rate, amount): #PRIVATE
-        return self.Poloiex_ASK('sell', {"currencyPair": currencyPair, "rate": rate, "amount": amount})
+        return self.Poloiex_ASK("sell", {"currencyPair": currencyPair, "rate": rate, "amount": amount})
 
     def cancel(self, currencyPair, orderNumber): #PRIVATE
-        return self.Poloiex_ASK('cancelOrder', {"currencyPair": currencyPair, "orderNumber": orderNumber})
+        return self.Poloiex_ASK("cancelOrder", {"currencyPair": currencyPair, "orderNumber": orderNumber})
 
 

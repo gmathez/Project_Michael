@@ -21,5 +21,5 @@ def Order_identification_extract():
                 identif += 1
             orders_identification[identif] = order_bloc["TRADE"]
         else:
-            orders_identification[order_bloc["IDENTIFICATION"]] = order_bloc["TRADE"]
+            orders_identification[int(order_bloc["IDENTIFICATION"])] = order_bloc["TRADE"]
     return orders_identification
