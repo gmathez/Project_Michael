@@ -9,8 +9,10 @@ import time
 from time import strftime
 from random import uniform
 
+
 def clear_terminal():
     os.system('cls' if os.name == 'nt' else 'clear')
+
 
 def agreements():
     Response = input(
@@ -30,6 +32,7 @@ def agreements():
         print("\nYour answer was not AGREE, Please Restart if you change of mind.")
         return False
     return True
+
 
 def Public_Connexion_Control(poloniex_server, time_server):
     clear_terminal()
@@ -55,6 +58,7 @@ def Public_Connexion_Control(poloniex_server, time_server):
             message["error"]) + ". Please try again in a few minutes")
         return False
     return True
+
 
 def Close_System(entier):
     clear_terminal()
@@ -84,8 +88,10 @@ def Close_System(entier):
         time.sleep(60)
         sys.exit(entier)
 
+
 def CLOSE_PROJECT(signal, frame):
     Close_System(0)
+
 
 signal.signal(signal.SIGINT, CLOSE_PROJECT)
 
@@ -108,7 +114,7 @@ if __name__ == '__main__':
         Close_System(1)
 
     """ CONTROL PRIVATE CONNEXION """
-    time_server.Sleep_Time(30)
+    time_server.Sleep_Time(10)
     returnBalances = {}
     continue_ = True #quand j'aurai les infos on pourras tester!
     #continue_ = False
@@ -136,23 +142,17 @@ if __name__ == '__main__':
 
     """SEE THE SITUATION OF THE ORDERS"""
     returnOpenOrders = {}
-    time_server.Sleep_Time(30)
+    time_server.Sleep_Time(10)
     if time_server.Spike_Sender():
         clear_terminal()
         print("Our Open orders will be write on a text file (Order_OPEN_BEFORE). \nUnfortunately all your open orders between the limit for your strategy will be cancel. \nBut when we will inform you about it, you can put again these orders without affecting the system")
         returnOpenOrders = poloniex_server.returnOpenOrders()
-        #returnOpenOrders = {"ETH_ZRX":[{"orderNumber":"120466","type":"sell","rate":"0.025","amount":"100","total":"2.5"},
-                                       #{"orderNumber": "127492", "type": "buy", "rate": "1.352", "amount": "50",
-                                        #"total": "2"},
-                                       #{"orderNumber": "73926", "type": "buy", "rate": "2", "amount": "100",
-                                       # "total": "2.5"}]}
-
         if "error" in returnOpenOrders:
             clear_terminal()
             print("An error occur during the return Order with this reason : " + str(returnOpenOrders["error"]))
             Close_System(1)
 
-        time_server.Sleep_Time(20)
+        time_server.Sleep_Time(30)
 
     text = "START : " + strftime("%a, %d %b %Y %H:%M:%S", time.localtime()) + "\n"
     fichier = open("Order_DONE.txt", "w")
@@ -168,11 +168,12 @@ if __name__ == '__main__':
     if not (len(returnOpenOrders) == 0):
         fichier = open("Order_OPEN_BEFORE.txt", "a")
         for key, values in returnOpenOrders.items():
-            fichier.write("\n OPEN ORDER FOR : " + str(key))
-            for element in values:
-                fichier.write("\n\t OrderNumber : " + str(element["orderNumber"]) + " TYPE : " + str(element["type"]).upper() +
-                              " RATE : " + str(element["rate"]) + " AMOUNT : " + str(element["amount"]) + " TOTAL : " + str(element["total"]))
-            fichier.write("\n" * 2)
+            if len(values) > 0:
+                fichier.write("\n OPEN ORDER FOR : " + str(key))
+                for element in values:
+                    fichier.write("\n\t OrderNumber : " + str(element["orderNumber"]) + " TYPE : " + str(element["type"]).upper() +
+                                  " RATE : " + str(element["rate"]) + " AMOUNT : " + str(element["amount"]) + " TOTAL : " + str(element["total"]))
+                fichier.write("\n" * 2)
         fichier.close()
     else:
         fichier = open("Order_OPEN_BEFORE.txt", "a")
@@ -202,7 +203,7 @@ if __name__ == '__main__':
             Order_Limit[key_order]["limit_MIN"] = values_order[0]["rate_buy"]
             for order in values_order:
                 if order["rate_sell"] > Order_Limit[key_order]["limit_MAX"]:
-                    Order_Limit[key_order]["rate_MAX"] = order["amount_sell"]
+                    Order_Limit[key_order]["limit_MAX"] = order["rate_sell"]
                 if order["rate_buy"] < Order_Limit[key_order]["limit_MIN"]:
                     Order_Limit[key_order]["limit_MIN"] = order["rate_buy"]
 
@@ -218,19 +219,20 @@ if __name__ == '__main__':
                             dic["currency"] = currency
                             dic["orderNumber"] = open_order["orderNumber"]
                             Orders_to_cancel.append(dic)
-
     fichier = open("Order_OPEN_BEFORE.txt", "a")
     if len(Orders_to_cancel) > 0:
-        fichier.write("\n ORDER CANCELED : ")
-        for order_to_cancel in Orders_to_cancel:
-            fichier.write("\n ORDER NUMBER : " + str(order_to_cancel["orderNumber"]))
+        fichier.write("\n ORDER THAT HAVE TO BE CANCELED : ")
+        for order_canceled in Orders_to_cancel:
+            fichier.write("\n ORDER NUMBER : " + str(order_canceled["orderNumber"]))
         print("The order that will be cancel as been written in Order_OPEN_BEFORE.txt")
     else:
-        fichier.write("\n NO ORDER CANCEL")
+        fichier.write("\n NO ORDER TO CANCEL")
         print("No Order will be cancel.")
     fichier.close()
 
+
     """ORDER CANCEL"""
+    Orders_canceled = []
     if len(Orders_to_cancel) > 0:
         for order_dic in Orders_to_cancel:
             if time_server.Spike_Sender():
@@ -242,15 +244,26 @@ if __name__ == '__main__':
                           str(order_dic["orderNumber"]) + "Error : " + str(success["error"]))
                     time_server.Sleep_Time(3)
                 elif success["success"] == 1:
-                    print("The order number : " + str(order_dic["orderNumber"] + " was canceled"))
-                time_server.Sleep_Time(2.5)
+                    print(str(success["message"]) + "\n")
+                    Orders_canceled.append(order_dic)
+                    time_server.Sleep_Time(2.5)
     Orders_to_cancel.clear()
 
+    fichier = open("Order_OPEN_BEFORE.txt", "a")
+    if len(Orders_canceled) > 0:
+        fichier.write("\n ORDER CANCELED : ")
+        for order_canceled in Orders_canceled:
+            fichier.write("\n ORDER NUMBER : " + str(order_canceled["orderNumber"]))
+    else:
+        fichier.write("\n NO ORDER CANCELED")
+        print("No Order will be cancel.")
+    fichier.close()
+
     print("If a order was not cancel it's not a udge problem. Just try to cancel this/these order(s).\n"
-          "The system will place the new orders according to the strategy.")
+          "The system will place the new orders according to the strategy.\n")
 
     returnTicker = {}
-    time_server.Sleep_Time(30)
+    time_server.Sleep_Time(10)
     if time_server.Spike_Sender():
         returnTicker = poloniex_server.returnTicker()
         if "error" in returnTicker:
@@ -259,7 +272,7 @@ if __name__ == '__main__':
             Close_System(1)
 
     returnBalances = {}
-    time_server.Sleep_Time(5)
+    time_server.Sleep_Time(10)
     if time_server.Spike_Sender():
         returnBalances = poloniex_server.returnBalances()
         #returnBalances = {"ETH" : "100000000", "ZRX" : "100000000"}
@@ -268,14 +281,14 @@ if __name__ == '__main__':
             time_server.Sleep_Time(10)
             Close_System(1)
 
-    returnCurrencies = {}
-    time_server.Sleep_Time(5)
-    if time_server.Spike_Sender():
-        returnCurrencies = poloniex_server.returnCurrencies()
-        if "error" in returnCurrencies:
-            clear_terminal()
-            print("An error occur during the return Currencies with this reason : " + str(returnCurrencies["error"]))
-            Close_System(1)
+    # returnCurrencies = {}
+    # time_server.Sleep_Time(5)
+    # if time_server.Spike_Sender():
+        # returnCurrencies = poloniex_server.returnCurrencies()
+        # if "error" in returnCurrencies:
+            # clear_terminal()
+            # print("An error occur during the return Currencies with this reason : " + str(returnCurrencies["error"]))
+            # Close_System(1)
 
     New_orders_to_do = []
     Total_money = {}
@@ -295,7 +308,8 @@ if __name__ == '__main__':
             new_order["currencyPair"] = str(order_param["currencyPair"])
             new_order["amount"] = float(order_param["amount_buy"])
             new_order["rate"] = float(order_param["rate_buy"])
-            Total_money[Money_BUY] -= (new_order["amount"] * new_order["rate"]) / 100 * (100 + float(returnCurrencies[Money_BUY]["txFee"]))
+            # Total_money[Money_BUY] -= (new_order["amount"] * new_order["rate"]) / 100 * (100 + float(returnCurrencies[Money_BUY]["txFee"]))
+            Total_money[Money_BUY] -= new_order["amount"] * new_order["rate"]
         else:
             new_order["type"] = "sell"
             new_order["currencyPair"] = str(order_param["currencyPair"])
@@ -336,6 +350,11 @@ if __name__ == '__main__':
                 Error = True
             else:
                 order_done["order"] = ORDER
+                total = float(order["rate"]) * float(order["amount"])
+                total = float("{0:.10f}".format(total))
+                order_done["order"]["resultingTrades"] = {}
+                order_done["order"]["resultingTrades"]["type"] = order["type"]
+                order_done["order"]["resultingTrades"]["total"] = total
                 Orders_done.append(order_done)
 
     order_server.Add_New_orders(Orders_done)
@@ -352,6 +371,7 @@ if __name__ == '__main__':
           "TO STOP THE PROGRAMME PLEASE PRESS CTRL + C\n Have a good day ;-) ")
 
     time_server.Sleep_Time(60)
+
     while True:
         returnOpenOrders_loop = {}
         if time_server.Spike_Sender():
@@ -393,6 +413,11 @@ if __name__ == '__main__':
                     Error = True
                 else:
                     order_done["order"] = ORDER
+                    total = float(order["rate"]) * float(order["amount"])
+                    total = float("{0:.10f}".format(total))
+                    order_done["order"]["resultingTrades"] = {}
+                    order_done["order"]["resultingTrades"]["type"] = order["type"]
+                    order_done["order"]["resultingTrades"]["total"] = total
                     Orders_done.append(order_done)
 
         order_server.Add_New_orders(Orders_done)
@@ -400,7 +425,7 @@ if __name__ == '__main__':
             time_server.Sleep_Time(120)
             Close_System(1)
 
-        time_server.Sleep_Time(uniform(0,10)*uniform(0,10)*6+5)
+        time_server.Sleep_Time(uniform(1, 10)*uniform(0, 10)*6+5)
         continue
 
 

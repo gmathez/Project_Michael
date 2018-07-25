@@ -1,3 +1,6 @@
+from time import strftime
+import time
+
 
 class Order:
 
@@ -23,8 +26,8 @@ class Order:
                     find = True
             if not find:
                 self.my_order_done.append(order_identif)
-                text = "\n" + "ORDER N°" + str(order["orderNumber"]) + " Type : " + str(
-                    order["resultingTrades"][0]["type"]) + " Total : " + str(order["resultingTrades"][0]["total"])
+                text = "\n" + "ORDER DONE N" + str(order["orderNumber"]) + " Type : " + str(
+                    order["resultingTrades"]["type"]) + " Total : " + str(order["resultingTrades"]["total"]) + " DATE : " + strftime("%a, %d %b %Y %H:%M:%S", time.localtime())
                 fichier = open("Order_DONE.txt", "a")
                 fichier.write(text)
                 fichier.close()
@@ -61,8 +64,8 @@ class Order:
     def Add_New_order(self, new_order):
         self.my_orders.append(new_order)
         order = new_order["order"]
-        text = "\n" + "ORDER N°" + str(order["orderNumber"]) + " Type : " + str(
-            order["resultingTrades"][0]["type"]) + " Total : " + str(order["resultingTrades"][0]["total"])
+        text = "\n" + "ORDER NEW N" + str(order["orderNumber"]) + " Type : " + str(
+                order["resultingTrades"]["type"]) + " Total : " + str(order["resultingTrades"]["total"]) + " DATE : " + strftime("%a, %d %b %Y %H:%M:%S", time.localtime())
         fichier = open("Order_NEW.txt", "a")
         fichier.write(text)
         fichier.close()
