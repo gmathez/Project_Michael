@@ -27,7 +27,7 @@ class Order:
             if not find:
                 self.my_order_done.append(order_identif)
                 text = "\n" + "ORDER DONE N" + str(order["orderNumber"]) + " Type : " + str(
-                    order["resultingTrades"]["type"]) + " Total : " + str(order["resultingTrades"]["total"]) + " DATE : " + strftime("%a, %d %b %Y %H:%M:%S", time.localtime())
+                    order["resultingTrades"]["type"]) + " Rate : " + str(order["resultingTrades"]["rate"]) + " Amount : " + str(order["resultingTrades"]["amount"]) + " Total : " + str(order["resultingTrades"]["total"]) + " DATE : " + strftime("%a, %d %b %Y %H:%M:%S", time.localtime())
                 fichier = open("Order_DONE.txt", "a")
                 fichier.write(text)
                 fichier.close()
@@ -42,7 +42,7 @@ class Order:
         if len(self.my_order_done) > 0:
             for order_done in self.my_order_done:
                 if order_done["identification"] in self.orders_identification:
-                    if order_done["order"]["resultingTrades"][0]["type"] == "buy":
+                    if order_done["order"]["resultingTrades"]["type"] == "buy":
                         new_orders.append({"identification": order_done["identification"], "type": "sell",
                                           "currencyPair": str(
                                               self.orders_identification[order_done["identification"]]["currencyPair"]),
@@ -50,7 +50,7 @@ class Order:
                                               self.orders_identification[order_done["identification"]]["amount_sell"]),
                                           "rate": float(
                                               self.orders_identification[order_done["identification"]]["rate_sell"])})
-                    elif order_done["order"]["resultingTrades"][0]["type"] == "sell":
+                    elif order_done["order"]["resultingTrades"]["type"] == "sell":
                         new_orders.append({"identification": order_done["identification"], "type": "buy",
                                           "currencyPair": str(
                                               self.orders_identification[order_done["identification"]]["currencyPair"]),
@@ -65,7 +65,7 @@ class Order:
         self.my_orders.append(new_order)
         order = new_order["order"]
         text = "\n" + "ORDER NEW N" + str(order["orderNumber"]) + " Type : " + str(
-                order["resultingTrades"]["type"]) + " Total : " + str(order["resultingTrades"]["total"]) + " DATE : " + strftime("%a, %d %b %Y %H:%M:%S", time.localtime())
+                order["resultingTrades"]["type"]) + " Rate : " + str(order["resultingTrades"]["rate"]) + " Amount : " + str(order["resultingTrades"]["amount"]) + " Total : " + str(order["resultingTrades"]["total"]) + " DATE : " + strftime("%a, %d %b %Y %H:%M:%S", time.localtime())
         fichier = open("Order_NEW.txt", "a")
         fichier.write(text)
         fichier.close()

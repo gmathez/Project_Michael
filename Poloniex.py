@@ -6,6 +6,7 @@ import time
 import hmac, hashlib
 from urllib.error import URLError, HTTPError
 from URL_Error import Return_Code
+from socket import timeout
 
 
 class Poloniex:
@@ -27,7 +28,10 @@ class Poloniex:
                 return {"error": "\n"}
             except URLError as error:
                 print("We failed to reach a server \n")
-                print("\t Reason : " + error.reason + "\n")
+                print("\t Reason : " + str(error.reason) + "\n")
+                return {"error": "\n"}
+            except timeout:
+                print("We failed to reach a server because it's too long\n")
                 return {"error": "\n"}
             except json.JSONDecodeError as error:
                 print("\nERROR : The command returnTicket or return24Volume have come with a " +
@@ -51,13 +55,15 @@ class Poloniex:
             except HTTPError as error:
                 if int(error.code) == 422:
                     print("An error occur with false informations during the ordertype : " + str(type) + " : " + str(req) + "\n")
-
                 print('The Server couldn\'t fulfill the request\n')
                 print("\t Error code : " + str(error.code) +  " " + str(Return_Code(error.code)[0]) + " " + str(Return_Code(error.code)[1]) + "\n")
                 return {"error": "\n"}
             except URLError as error:
                 print("We failed to reach a server \n")
-                print("\t Reason : " + error.reason + "\n")
+                print("\t Reason : " + str(error.reason) + "\n")
+                return {"error": "\n"}
+            except timeout:
+                print("We failed to reach a server because it's too long\n")
                 return {"error": "\n"}
             except json.JSONDecodeError as error:
                 print("\nERROR : The command "+ str(type).upper()+" have come with a " +
